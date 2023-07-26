@@ -6,6 +6,7 @@ const socketIO = require('socket.io');
 
 const User = require('./models/User');
 const Message = require('./models/Message');
+const Group = require('./models/Group');
 
 const app = express();
 dotenv.config();
@@ -79,64 +80,177 @@ const server = app.listen(port, () => {
 
 const io = socketIO(server);
 
+const users = {};
+
+async function saveMessage(sender, receivers, text, group = null) {
+  try {
+    const message = new Message({
+      sender,
+      receivers,
+      message: text,
+      group,
+    });
+    
+    await message.save();
+
+    return message;
+  } catch (error) {
+    console.error('Error saving message:', error);
+    throw error;
+  }
+}
+
 io.on('connection', (socket) => {
-  console.log('Connection established by a user');
+  console.log('A user connected with socket id:', socket.id);
+
+  socket.on('authenticate', (userId) => {
+    users[userId] = socket.id;
+    console.log(`User with ID ${userId} authenticated.`);
+  });
 
   socket.on('private-message', async (data) => {
     try {
-      const { sender, receiver, message } = data;
+      const { sender, receiver, text } = data;
 
-      console.log(sender)
+      const message = await saveMessage(sender, [receiver], text);
+      
+      io.to(users[sender]).emit('new-message', message);
+      io.to(users[receiver]).emit('new-message', message);
+    } catch (error) {
+      console.error('Error sending private message:', error);
+    }
+  });
 
-      const senderId = new mongoose.Types.ObjectId(sender);
-      const receiverId = new mongoose.Types.ObjectId(receiver);
+  socket.on('group-message', async (data) => {
+    try {
+      const { sender, groupId, text } = data;
 
-      const [senderInfo, receiverInfo] = await Promise.all([
-        User.findById(senderId),
-        User.findById(receiverId)
-      ])
+      const group = await Group.findById(groupId);
 
-      console.log(senderInfo, receiverInfo)
-
-      if (!senderInfo || !receiverInfo) {
-        return socket.emit('message error', { message: 'Sender or receiver not found.' });
+      if (!group) {
+        console.log('Group not found');
+        return;
       }
 
-      const mes = new Message({
-        sender,
-        receiver,
-        message
-      })
+      const message = await saveMessage(sender, group.members, text, groupId);
 
-      await mes.save();
-
-      socket.emit('new-private-message', mes);
-      socket.to(receiverInfo).emit('new-private-message', mes);
-
+      group.members.forEach((member) => {
+        if (users[member]) {
+          io.to(users[member]).emit('new-group-message', message);
+        }
+      });
     } catch (error) {
-      console.log(error)
-      socket.emit('private-message-error', { message: 'Error occurred while proccessing your request.' });
+      console.error('Error sending group message:', error);
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected.');
-  });
-
-  app.post('/chat', async (req, res) => {
-    try {
-      const { senderId, receiverId } = req.params;
-      const messages = await Message.find({
-        $or: [
-          { sender: senderId, receiver: receiverId },
-          { sender: receiverId, receiver: senderId }
-        ]
-      }).sort('timestamp');
-
-      res.json(messages);
-    } catch (error) {
-      res.status(500).json({ message: 'An error occurred while fetching messages' });
+    const userId = Object.keys(users).find((key) => users[key] === socket.id);
+    if (userId) {
+      delete users[userId];
+      console.log(`User with ID ${userId} disconnected.`);
     }
-  })
+  });
+});
+
+app.post('/create-group', async (req, res) => {
+  try {
+    const { name, admin, members } = req.body;
+
+    const [groupAdmin, groupMembers] = await Promise.all([
+      User.findById(admin),
+      User.find({ _id: { $in: members } }),
+    ]);
+
+    if (!groupAdmin || groupMembers.length !== members.length) {
+      return res.status(404).json({ message: 'Admin or members not found.' });
+    }
+
+    const newGroup = new Group({ name, admin, members });
+    await newGroup.save();
+
+    members.forEach((member) => {
+      if (users[member]) {
+        io.to(users[member]).emit('new-group', newGroup);
+      }
+    });
+
+    res.json({ message: 'Group created successfully.', group: newGroup });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred while creating the group.' });
+  }
+});
+
+app.post('/send-group-message', async (req, res) => {
+  try {
+    const { sender, groupId, text } = req.body;
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found.' });
+    }
+
+    const message = await saveMessage(sender, group.members, text, groupId);
+    
+    group.members.forEach((member) => {
+      if (users[member]) {
+        io.to(users[member]).emit('new-group-message', message);
+      }
+    });
+
+    res.json({ message: 'Message sent successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred while sending the message.' });
+  }
+});
+
+app.get('/group-messages/:groupId', async (req, res) => {
+  try {
+    console.log(req)
+    const { groupId } = req.params;
+
+    const message = await Message.find({
+      group: groupId
+    })
+
+    res.json({ message });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred' })
+  }
 })
 
+
+app.get('/:userId/messages', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const messages = await Message.find({ receivers: userId }).sort({ createdAt: 1 });
+
+    res.json({ messages });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred while fetching received messages.' });
+  }
+});
+
+app.post('/chat/:senderId/:receiverId', async (req, res) => {
+  try {
+    const { sender, receiver, text } = req.body;
+
+    const [messageSender, messageReceiver] = await Promise.all([
+      User.findById(sender),
+      User.findById(receiver),
+    ]);
+
+    if (!messageSender || !messageReceiver) {
+      return res.status(404).json({ message: 'Sender or receiver not found.' });
+    }
+
+    const message = await saveMessage(sender, [receiver], text);
+
+    io.to(sender).emit('new-message', message);
+    io.to(receiver).emit('new-message', message);
+
+    res.json({ message: 'Message sent successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred while sending the message.' });
+  }
+});
