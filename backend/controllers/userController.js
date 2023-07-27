@@ -75,4 +75,23 @@ const authUser = async (req, res) => {
     
 };
 
-module.exports = { registerUser, authUser }
+const getAllUsers = async (req, res) => {
+    const key = req.query.search;
+    let userKey;
+    if (key) {
+       userKey = {
+        $or: [
+          { name: { $regex: key, $options: "i" }},
+          { email: { $regex: key, $options: "i"} }
+        ]
+       }
+    }
+    else {
+      userKey = {};
+    }
+
+    const users = await User.find(userKey)
+    res.send(users);
+};
+
+module.exports = { registerUser, authUser, getAllUsers }
