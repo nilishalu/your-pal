@@ -6,24 +6,19 @@ const messageSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    receivers: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    }],
-    message: {
+    content: {
         type: String,
         required: true
     },
-    group: {
+    chat: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Group'
-    },
-    timestamp: {
-        type: Date,
-        default: Date.now
+        ref: 'Chat',
     }
-});
+},
+{
+    timestamps: true
+}
+);
 
 const Message = mongoose.model('Message', messageSchema);
 
