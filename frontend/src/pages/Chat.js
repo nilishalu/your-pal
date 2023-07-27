@@ -1,25 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { AppState } from '../context/AppProvider';
+import SideBar from '../components/SideBar';
+import Chats from '../components/Chats';
+import ChatBox from '../components/ChatBox';
 
 const Chat = () => {
-  const [chats, setChats] = useState([]);
-
-  const fetchChats = async () => {
-    const data = await axios.get("/64bfff4d61f32e63bcad0909/messages");
-
-    setChats(data.data.messages);
-  }
-
-  useEffect(() => {
-    fetchChats()
-  }, [])
-
-  return (
+  const user = AppState().user;
+  console.log(user)
+    return (
     <div>
-      Chats
-      {chats.map((chat) => (
-        <div key={chat._id}>{chat.sender}</div>
-      ))}
+      {user && <SideBar/>}
+      {user && <Chats/>}
+      {user && <ChatBox/>}
     </div>
   )
 }

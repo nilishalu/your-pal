@@ -1,14 +1,14 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 const Home = () => {
-    const navigate = useNavigate();
+    const navigate = useHistory();
 
     useEffect(() => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         
         if (userInfo) {
-            navigate('/chats');
+            navigate.push('/chats');
         }
     }, [navigate]);
 
