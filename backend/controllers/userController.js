@@ -90,7 +90,7 @@ const getAllUsers = async (req, res) => {
       userKey = {};
     }
 
-    const users = await User.find(userKey)
+    const users = await User.find(userKey).find({ _id: {$ne: req.user._id} });
     res.send(users);
 };
 

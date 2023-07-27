@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const socketIO = require('socket.io');
 
 const userRoutes = require("./routes/userRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 const User = require('./models/User');
 const Message = require('./models/Message');
@@ -30,6 +31,7 @@ db.once('open', () => {
 })
 
 app.use('/api/user', userRoutes);
+app.use('/api/chat', chatRoutes);
 
 const server = app.listen(port, () => {
   console.log('Server running at ' + port);
