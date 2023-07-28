@@ -5,6 +5,8 @@ const AppContext = createContext();
 
 const AppProvider = ({children}) => {
     const [user, setUser] = useState(null);
+    const [chats, setChats] = useState([]);
+    const [currChat, setCurrChat] = useState(null);
     
     useEffect(() => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -15,7 +17,7 @@ const AppProvider = ({children}) => {
         }
     }, [])
 
-    return <AppContext.Provider value = {{user, setUser}}>{children}</AppContext.Provider>
+    return <AppContext.Provider value = {{user, setUser, chats, setChats, currChat, setCurrChat}}>{children}</AppContext.Provider>
 };
 
 export const AppState = () => {

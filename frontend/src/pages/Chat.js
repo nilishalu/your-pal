@@ -5,8 +5,9 @@ import Chats from '../components/Chats';
 import ChatBox from '../components/ChatBox';
 
 const Chat = () => {
-  const user = AppState().user;
+  const {user} = AppState();
   console.log(user)
+    
     return (
     <div>
       {user && <SideBar/>}
