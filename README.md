@@ -1,6 +1,6 @@
 # Meet your Pal
 
-A Full Stack Chat application where you can connect with your buddies.
+A Full Stack Chat application where you can connect with your buddies. Either it's 1:1 or a group of buddies, you can connect instantly.
 
 ## Features
 
