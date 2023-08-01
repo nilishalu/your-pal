@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './login.css';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -34,27 +35,29 @@ function Login() {
     };
 
     return (
-        <div>
-            <h2>Login</h2>
+        <div className='container-login'>
+            <h2 className='heading'>Login</h2>
             <form onSubmit={onLogin}>
-            <label>Email:</label>
+            <label className='input-label'>Email:</label>
                <input 
                type = "email"
                value = {email}
                placeholder='Enter your email'
+               className='input-field'
                required = "true"
                onChange = {(e) => setEmail(e.target.value)}
                />
 
-               <label>Password:</label>
+               <label className='input-label'>Password:</label>
                <input 
                type = "password"
                value = {password}
+               className='input-field'
                required = "true"
                onChange={(e) => setPassword(e.target.value)}
                />
 
-               <button type="submit">Login</button>
+               <button type="submit" className='submit' >Login</button>
             </form>
         </div>
     )
