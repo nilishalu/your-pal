@@ -7,7 +7,6 @@ const socketIO = require('socket.io');
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 
-const User = require('./models/User');
 const Message = require('./models/Message');
 
 const app = express();
