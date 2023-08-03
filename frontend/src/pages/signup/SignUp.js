@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import "./signup.css";
 
 function SignUp() {
     const [name, setName] = useState('');
@@ -43,7 +44,7 @@ function SignUp() {
     };
 
     return (
-        <div className='container-login'>
+        <div className='container-signup'>
             <h2 className='heading'>SignUp</h2>
             <form onSubmit = {onSignUp}>
                <label className='input-label'>Name:</label>
@@ -51,6 +52,7 @@ function SignUp() {
                type = "text"
                value = {name}
                placeholder='Enter your name'
+               className='input-field'
                onChange = {(e) => setName(e.target.value)}
                required = "true"
                />
@@ -60,6 +62,7 @@ function SignUp() {
                type = "email"
                value = {email}
                placeholder='Enter your email'
+               className='input-field'
                required = "true"
                onChange = {(e) => setEmail(e.target.value)}
                />
@@ -67,6 +70,7 @@ function SignUp() {
                <label className='input-label'>Password:</label>
                <input 
                type = "password"
+               className='input-field'
                value = {password}
                required = "true"
                onChange = {(e) => setPassword(e.target.value)}
@@ -80,7 +84,7 @@ function SignUp() {
                onChange = {(e) => postPicture(e.target.files[0])}
                />
 
-               <button type = "submit">SignUp</button>
+               <button type = "submit" className='submit'>SignUp</button>
             </form>
         </div>
     )

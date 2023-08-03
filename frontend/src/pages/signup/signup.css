@@ -1,0 +1,9 @@
+.container-signup {
+    margin-left: 36%;
+    margin-top: 50px;
+    background-color: rgb(152, 206, 224);
+    width: 320px;
+    padding: 60px;
+    border-radius: 15px;
+    color: rgb(29, 80, 100);
+}
