@@ -43,10 +43,10 @@ function SignUp() {
     };
 
     return (
-        <div>
-            <h2>SignUp</h2>
+        <div className='container-login'>
+            <h2 className='heading'>SignUp</h2>
             <form onSubmit = {onSignUp}>
-               <label>Name:</label>
+               <label className='input-label'>Name:</label>
                <input 
                type = "text"
                value = {name}
@@ -55,7 +55,7 @@ function SignUp() {
                required = "true"
                />
 
-               <label>Email:</label>
+               <label className='input-label'>Email:</label>
                <input 
                type = "email"
                value = {email}
@@ -64,7 +64,7 @@ function SignUp() {
                onChange = {(e) => setEmail(e.target.value)}
                />
 
-               <label>Password:</label>
+               <label className='input-label'>Password:</label>
                <input 
                type = "password"
                value = {password}
@@ -72,7 +72,7 @@ function SignUp() {
                onChange = {(e) => setPassword(e.target.value)}
                />
 
-              <label>Profile Picture:</label>
+              <label className='input-label'>Profile Picture:</label>
                <input 
                type = "file"
                p = {1.8}
